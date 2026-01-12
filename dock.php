@@ -39,3 +39,4 @@ if($result->num_rows > 0){
         "message"=>"Department not found"
     ]);
 }
+?>
