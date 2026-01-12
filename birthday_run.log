@@ -1,0 +1,22 @@
+[2025-12-31 09:59:28] ========== Script Started ==========
+[2025-12-31 09:59:28] Running cron as admin_id=1
+[2025-12-31 09:59:28] Feed inserted for emp_id=2 for birthday John Doe
+[2025-12-31 09:59:28] Feed inserted for emp_id=3 for birthday John Doe
+[2025-12-31 09:59:28] Feed inserted for emp_id=6 for birthday John Doe
+[2025-12-31 09:59:28] Feed inserted for emp_id=13 for birthday John Doe
+[2025-12-31 09:59:28] Feed inserted for emp_id=15 for birthday John Doe
+[2025-12-31 09:59:30] Failed to send email to john.doe@example.com for John Doe
+[2025-12-31 09:59:30] Feed inserted for emp_id=2 for birthday Aisha Khan
+[2025-12-31 09:59:30] Feed inserted for emp_id=3 for birthday Aisha Khan
+[2025-12-31 09:59:30] Feed inserted for emp_id=6 for birthday Aisha Khan
+[2025-12-31 09:59:30] Feed inserted for emp_id=13 for birthday Aisha Khan
+[2025-12-31 09:59:30] Feed inserted for emp_id=15 for birthday Aisha Khan
+[2025-12-31 09:59:32] Failed to send email to aisha.khan@example.com for Aisha Khan
+[2025-12-31 09:59:32] ========== Script Finished ==========
+
+[2025-12-31 10:01:10] ========== Script Started ==========
+[2025-12-31 10:01:10] Running cron as admin_id=1
+[2025-12-31 10:01:12] Failed to send email to john.doe@example.com for John Doe
+[2025-12-31 10:01:14] Failed to send email to aisha.khan@example.com for Aisha Khan
+[2025-12-31 10:01:14] ========== Script Finished ==========
+

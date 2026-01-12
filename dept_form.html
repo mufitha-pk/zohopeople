@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Department</title>
+    <style>
+        label { display:block; margin-top:10px; font-weight: bold; }
+        input, select, button { width:300px; padding:6px; margin-top:2px; }
+        .search-wrapper { position: relative; }
+        .search-wrapper input {
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 2px;
+        }
+        button { cursor: pointer; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<h2>View Department</h2>
+
+<form id="deptForm">
+    <label>Department Name</label>
+    <input type="text" id="department_name" name="department_name">
+
+    <label>Department Head</label>
+    <div class="search-wrapper">
+        <input type="text" id="department_head_search" placeholder="Search employee...">
+        <select id="department_head" size="5"></select>
+    </div>
+
+    <label>Mail Alias</label>
+    <input type="text" id="mail_alias" name="mail_alias">
+
+    <label>Parent Department</label>
+    <div class="search-wrapper">
+        <input type="text" id="parent_department_search" placeholder="Search parent department...">
+        <select id="parent_department" size="5"></select>
+        <input type="hidden" id="parent_department_id" name="parent_department_id">
+    </div>
+
+    <label>Added By</label>
+    <input type="text" id="added_by" readonly>
+
+    <label>Added Time</label>
+    <input type="text" id="added_time" readonly>
+
+    <label>Modified By</label>
+    <input type="text" id="modified_by" readonly>
+
+    <label>Modified Time</label>
+    <input type="text" id="modified_time" readonly>
+
+    <button type="button" id="updateBtn">Update Department</button>
+</form>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const departmentId = params.get("id");
+
+let allEmployees = [];
+let allParentDepts = [];
+
+// ================= Department Head =================
+function loadEmployees(selectedName = null){
+    fetch('select_dept_head.php')
+    .then(res => res.json())
+    .then(data => {
+        allEmployees = data.map(emp => ({ id: emp.emp_id, name: emp.first_name }));
+        renderDropdown(allEmployees, 'department_head', selectedName);
+        if(selectedName){
+            const emp = allEmployees.find(e => e.name == selectedName);
+            if(emp){
+                document.getElementById("department_head_search").value = `${emp.id} - ${emp.name}`;
+                document.getElementById("department_head").value = emp.name;
+            }
+        }
+    })
+    .catch(err => console.error(err));
+}
+
+document.getElementById("department_head_search").addEventListener("input", function(){
+    const query = this.value.toLowerCase();
+    const filtered = allEmployees.filter(emp => 
+        emp.name.toLowerCase().includes(query) || String(emp.id).includes(query)
+    );
+    renderDropdown(filtered, 'department_head');
+});
+
+document.getElementById("department_head").addEventListener("change", function(){
+    const selected = this.options[this.selectedIndex];
+    const [id, name] = selected.text.split(" - ");
+    document.getElementById("department_head_search").value = selected.text;
+    document.getElementById("department_head").value = name; // store only name
+});
+
+// ================= Parent Department =================
+function loadParentDepartments(selectedId = null){
+    fetch('select_parent_dept.php')
+    .then(res => res.json())
+    .then(data => {
+        allParentDepts = data.map(dept => ({ id: dept.id, name: dept.department_name }));
+        renderDropdown(allParentDepts, 'parent_department', selectedId);
+        if(selectedId){
+            const dept = allParentDepts.find(d => d.id == selectedId);
+            if(dept){
+                document.getElementById("parent_department_id").value = dept.id;
+                document.getElementById("parent_department_search").value = `${dept.id} - ${dept.name}`;
+            }
+        }
+    })
+    .catch(err => console.error(err));
+}
+
+document.getElementById("parent_department_search").addEventListener("input", function(){
+    const query = this.value.toLowerCase();
+    const filtered = allParentDepts.filter(dept => 
+        dept.name.toLowerCase().includes(query) || String(dept.id).includes(query)
+    );
+    renderDropdown(filtered, 'parent_department');
+});
+
+document.getElementById("parent_department").addEventListener("change", function(){
+    const selected = this.options[this.selectedIndex];
+    const [id, name] = selected.text.split(" - ");
+    document.getElementById("parent_department_search").value = selected.text;
+    document.getElementById("parent_department_id").value = id;
+});
+
+// ================= Helper =================
+function renderDropdown(list, selectId, selectedValue = null){
+    const select = document.getElementById(selectId);
+    select.innerHTML = '';
+    list.forEach(item => {
+        const option = document.createElement("option");
+        option.value = selectId === 'department_head' ? item.name : item.id; // store name for dept_head, id for parent
+        option.text = `${item.id} - ${item.name}`;
+        if(selectedValue && ((selectId === 'department_head' && item.name == selectedValue) || (selectId !== 'department_head' && item.id == selectedValue))){
+            option.selected = true;
+        }
+        select.appendChild(option);
+    });
+}
+
+// ================= Load Department Data =================
+function loadDepartmentData(){
+    if(!departmentId){
+        alert("Department ID missing in URL");
+        return;
+    }
+
+    fetch(`edit_dept.php?id=${departmentId}`)
+    .then(res => res.json())
+    .then(result => {
+        if(result.status === "success"){
+            const d = result.data;
+
+            document.getElementById("department_name").value = d.department_name || "";
+            document.getElementById("mail_alias").value = d.mail_alias || "";
+            document.getElementById("added_by").value = d.added_by || "";
+            document.getElementById("added_time").value = d.added_time || "";
+            document.getElementById("modified_by").value = d.modified_by || "";
+            document.getElementById("modified_time").value = d.modified_time || "";
+
+            loadEmployees(d.department_head); // department_head is now name
+            loadParentDepartments(d.parent_department_id);
+        } else {
+            alert(result.message);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Failed to fetch department data");
+    });
+}
+
+// ================= Update Department =================
+document.getElementById("updateBtn").addEventListener("click", function(){
+    const payload = {
+        department_id: departmentId,
+        department_name: document.getElementById("department_name").value,
+        department_head: document.getElementById("department_head").value, // only name
+        mail_alias: document.getElementById("mail_alias").value,
+        parent_department_id: document.getElementById("parent_department_id").value
+    };
+
+    fetch('edit_dept.php', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(result => {
+        if(result.status === "success"){
+            alert("Department updated successfully!");
+            loadDepartmentData();
+        } else {
+            alert(result.message);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Failed to update department");
+    });
+});
+
+// Initialize
+loadDepartmentData();
+</script>
+
+</body>
+</html>
