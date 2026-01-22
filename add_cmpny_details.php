@@ -1,10 +1,10 @@
 <?php
 header("Content-Type: application/json");
 include "db.php"; // Database connection
+print"hi";
 
 // 🔹 Get POST data (JSON)
 $data = json_decode(file_get_contents("php://input"), true);
-
 // Assign variables from JSON
 $name            = trim($data['name'] ?? '');
 $logo            = trim($data['logo'] ?? ''); // URL or filename
